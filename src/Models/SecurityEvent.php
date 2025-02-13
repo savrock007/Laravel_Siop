@@ -18,11 +18,12 @@ class SecurityEvent extends Model
     ];
 
 
-    public function getIpStatusAttribute(){
+    public function getIpBlockedAttribute(){
         $ip_hash = hash('sha256', $this->meta['IP']);
-        $ip = Ip::firstWhere('ip_hash',$ip_hash);
+        $exists = Ip::where('ip_hash',$ip_hash)->exists();
 
-        return $ip?->status;
+
+        return $exists;
     }
 
 }

@@ -13,7 +13,6 @@ class Ip extends Model
         return [
             'expires_at' => 'datetime',
             'ip' => 'encrypted',
-            'meta' => 'encrypted:array'
         ];
     }
 

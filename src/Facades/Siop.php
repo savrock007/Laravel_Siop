@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Facade;
  * @param string $severity
  * @return void
  * @method static void dispatchSecurityEvent(string $message, array $meta = [], string $category = 'custom', string $severity = 'low')
+ * @method static void blockIP(string $ip, string|null $expires_at = null)
+ * @method static void unblockIP(string $ip)
  */
 class Siop extends Facade
 {

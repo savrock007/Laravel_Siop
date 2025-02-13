@@ -49,16 +49,16 @@ class SqlInjectionProtection
 
         // Common SQL injection patterns
         $sql_patterns = [
-            "/(\bunion\b.*\bselect\b)/is",         // UNION SELECT
-            "/(\bselect\b.*\bfrom\b)/is",          // SELECT FROM
-            "/(\bwhere\b.*\b(=|like|or)\b)/is",    // WHERE = OR LIKE
-            "/(\bdrop\b.*\b(table|database)\b)/is", // DROP TABLE/DATABASE
-            "/(\binsert\b.*\binto\b)/is",          // INSERT INTO
-            "/(\bupdate\b.*\bset\b)/is",           // UPDATE SET
-            "/(\bdelete\b.*\bfrom\b)/is",          // DELETE FROM
-            "/(--|#|\/\*|\*\/)/",                  // SQL comments
-            "/(sleep\(\d+\)|benchmark\(\d+,\d+\))/i", // Time-based injection
-            "/('.*?=.*?')|(\b1=1\b)/i",            // Always-true conditions
+//            "/(\bunion\b.*\bselect\b)/is",         // UNION SELECT
+//            "/(\bselect\b.*\bfrom\b)/is",          // SELECT FROM
+//            "/(\bwhere\b.*\b(=|like|or)\b)/is",    // WHERE = OR LIKE
+//            "/(\bdrop\b.*\b(table|database)\b)/is", // DROP TABLE/DATABASE
+//            "/(\binsert\b.*\binto\b)/is",          // INSERT INTO
+//            "/(\bupdate\b.*\bset\b)/is",           // UPDATE SET
+//            "/(\bdelete\b.*\bfrom\b)/is",          // DELETE FROM
+//            "/(--|#|\/\*|\*\/)/",                  // SQL comments
+//            "/(sleep\(\d+\)|benchmark\(\d+,\d+\))/i", // Time-based injection
+//            "/('.*?=.*?')|(\b1=1\b)/i",            // Always-true conditions
         ];
 
         foreach ($sql_patterns as $pattern) {

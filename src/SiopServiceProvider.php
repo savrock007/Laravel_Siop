@@ -4,13 +4,15 @@ namespace Savrock\Siop;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Savrock\Siop\Events\NewSecurityEvent;
+use Savrock\Siop\Http\Controllers\HoneypotController;
 use Savrock\Siop\Http\Middleware\BlockIps;
 use Savrock\Siop\Http\Middleware\SqlInjectionProtection;
+use Savrock\Siop\Http\Middleware\XssProtection;
 use Savrock\Siop\Listeners\SecurityEventListener;
 use Savrock\Siop\Services\SiopService;
-use Savrock\Siop\Http\Middleware\XssProtection;
 
 class SiopServiceProvider extends ServiceProvider
 {
@@ -36,6 +38,9 @@ class SiopServiceProvider extends ServiceProvider
         $router->aliasMiddleware('siop.sql', SqlInjectionProtection::class);
         $router->aliasMiddleware('siop.ip_block', BlockIps::class);
 
+        $this->registerHoneypotRoutes();
+
+
         $router->middlewareGroup('siop_security', [
             BlockIps::class,
             XssProtection::class,
@@ -58,5 +63,14 @@ class SiopServiceProvider extends ServiceProvider
         });
 
         app('router')->aliasMiddleware('xss', XssProtection::class);
+    }
+
+    protected function registerHoneypotRoutes()
+    {
+        $routes = config('siop.honeypot_routes', []);
+
+        foreach ($routes as $route) {
+            Route::any($route, [HoneypotController::class, 'handle'])->name("honeypot.{$route}");
+        }
     }
 }

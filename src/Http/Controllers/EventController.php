@@ -5,8 +5,7 @@ namespace Savrock\Siop\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Savrock\Siop\Models\Ip;
+use Savrock\Siop\Facades\Siop;
 use Savrock\Siop\Models\SecurityEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -58,8 +57,9 @@ class EventController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $ip_status = $event->ip_status;
-        return view('siop::event-details', ['event' => $event, 'meta' => $event->meta,'ip_status' => $ip_status ,true]);
+        $ip_blocked = $event->ip_blocked;
+
+        return view('siop::event-details', ['event' => $event, 'meta' => $event->meta, 'ip_blocked' => $ip_blocked, true]);
     }
 
     public function destroy($event)
@@ -80,21 +80,15 @@ class EventController extends Controller
         if (!$event) {
             throw new NotFoundHttpException();
         }
+        $ip = $event->meta['IP'];
 
 
-        if (!isset($event->meta['IP'])) {
+        if (!isset($ip)) {
             return back()->with('error', 'No IP found for this event.');
         }
 
-        Ip::updateOrCreate([
-            'ip_hash' => hash('sha256', $event->meta['IP'])
-        ], [
-            'ip' => $event->meta['IP'],
-            'status' => 'blocked',
-            'expires_at' => now()->add(config('siop.block_time'), config('siop.block_time_unit')),
-            'meta' => $event->meta
+        Siop::blockIP($ip);
 
-        ]);
         return back()->with('success', 'IP blocked successfully.');
     }
 
@@ -104,14 +98,14 @@ class EventController extends Controller
         if (!$event) {
             throw new NotFoundHttpException();
         }
+        $ip = $event->meta['IP'];
 
 
-        if (!isset($event->meta['IP'])) {
+        if (!isset($ip)) {
             return back()->with('error', 'No IP found for this event.');
         }
 
-        $ip_hash = hash('sha256', $event->meta['IP']);
-        Ip::where('ip_hash', $ip_hash)->delete();
+        Siop::unblockIP($ip);
 
         return back()->with('success', 'IP whitelisted successfully.');
     }

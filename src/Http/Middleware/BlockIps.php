@@ -12,6 +12,7 @@ class BlockIps
 {
     public function handle(Request $request, Closure $next)
     {
+
         if (!config('siop.enable_ip_block')) {
             return $next($request);
         }
@@ -22,11 +23,7 @@ class BlockIps
 
         if (!$ip) {
             return $next($request);
-        }
-
-
-
-        if ($ip->status == 'blocked') {
+        } else {
             abort(403, 'Blocked');
         }
 

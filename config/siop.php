@@ -11,6 +11,7 @@ return [
     //Default severity for XSS attacks
     'xss_severity' => 'medium',
     'sql_injection_severity' => 'medium',
+    "honeypot_severity" => 'high',
 
     'enable_ip_block' => 'false',
 
@@ -25,5 +26,12 @@ return [
         "xss" => false,
         "custom" => true,
 
-    ]
+    ],
+
+    //Honeypot routes
+    'honeypot_routes' => [
+        'wp-admin',
+        'wp-login.php',
+        'private-api',
+    ],
 ];
