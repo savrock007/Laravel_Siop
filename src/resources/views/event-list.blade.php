@@ -72,7 +72,7 @@
             <table class="text-left border-collapse">
                 <thead>
                 <tr>
-                    <th class="p-3 border-b">ID</th>
+                    <th class="p-3 border-b" onclick="sortTable('id')">ID</th>
                     <th class="p-3 border-b cursor-pointer hidden lg:block" onclick="sortTable('created_at')">
                         Timestamp
                     </th>

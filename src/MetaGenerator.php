@@ -16,7 +16,7 @@ class MetaGenerator
             'User' => Auth::user()?->id ?? null,
             'Route' => $request->route()->uri() ?? 'unknown',
             'Method' => $request->method(),
-            'Headers' => $request->headers->all()
+//            'Headers' => $request->headers->all()
         ];
     }
 }

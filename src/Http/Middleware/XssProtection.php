@@ -26,7 +26,9 @@ class XssProtection
 
             if ($this->containsXss($value)) {
                 if ($report) {
-                    Siop::dispatchSecurityEvent('XSS detected', [], 'xss', config('siop.xss_severity'));
+                    $additional_meta = ['malicious_input' => [$key => $value]];
+
+                    Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
                 }
 
                 if ($mode === 'block') {

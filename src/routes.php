@@ -10,7 +10,8 @@ use Savrock\Siop\Http\Controllers\EventController;
 
 Route::group(
     [
-        'prefix' => config('siop.entry_route')
+        'prefix' => config('siop.entry_route'),
+        'middleware' => config('siop.middleware')
     ],
     function (){
         //Dashboard
