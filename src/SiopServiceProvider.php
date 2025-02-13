@@ -23,9 +23,9 @@ class SiopServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'siop');
 
-        $this->publishes([__DIR__ . '/config/siop.php' => config_path('siop.php')]);
+        $this->publishes([__DIR__ . '../config/siop.php' => config_path('siop.php')]);
         $this->mergeConfigFrom(
-            __DIR__ . '/config/siop.php', 'siop'
+            __DIR__ . '../config/siop.php', 'siop'
         );
 
 
