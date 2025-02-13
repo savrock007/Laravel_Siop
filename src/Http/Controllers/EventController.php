@@ -57,12 +57,15 @@ class EventController extends Controller
         if (!$event) {
             throw new NotFoundHttpException();
         }
-        return view('siop::event-details', ['event' => $event, 'meta' => $event->meta, true]);
+
+        $ip_status = $event->ip_status;
+        return view('siop::event-details', ['event' => $event, 'meta' => $event->meta,'ip_status' => $ip_status ,true]);
     }
 
     public function destroy($event)
     {
         $event = SecurityEvent::find($event);
+
         if (!$event) {
             throw new NotFoundHttpException();
         }
@@ -84,7 +87,7 @@ class EventController extends Controller
         }
 
         Ip::updateOrCreate([
-            'ip_hash' => Hash::make($event->meta['IP'])
+            'ip_hash' => hash('sha256', $event->meta['IP'])
         ], [
             'ip' => $event->meta['IP'],
             'status' => 'blocked',
@@ -107,7 +110,9 @@ class EventController extends Controller
             return back()->with('error', 'No IP found for this event.');
         }
 
-//        BlockedIp::where('ip', $event->meta['IP'])->delete();
+        $ip_hash = hash('sha256', $event->meta['IP']);
+        Ip::where('ip_hash', $ip_hash)->delete();
+
         return back()->with('success', 'IP whitelisted successfully.');
     }
 }

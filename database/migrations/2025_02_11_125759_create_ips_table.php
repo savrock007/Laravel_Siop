@@ -10,7 +10,7 @@ return new class extends Migration {
     Schema::create('ips', function (Blueprint $table) {
       $table->id();
       $table->text('ip');
-      $table->text('ip_hash');
+      $table->text('ip_hash')->index();
       $table->string('status');
       $table->dateTime('expires_at');
       $table->json('meta');

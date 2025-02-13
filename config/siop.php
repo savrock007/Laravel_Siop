@@ -6,7 +6,10 @@ return [
     'entry_route' => 'security',
 
     //Default severity for XSS attacks
-    'xss_middlware_severity' => 'medium',
+    'xss_severity' => 'medium',
+    'sql_injection_severity' => 'medium',
+
+    'enable_ip_block' => 'false',
 
     'block_time' => 100,
     "block_time_unit" => 'year',

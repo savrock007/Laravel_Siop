@@ -17,4 +17,12 @@ class SecurityEvent extends Model
         'meta' => 'encrypted:array'
     ];
 
+
+    public function getIpStatusAttribute(){
+        $ip_hash = hash('sha256', $this->meta['IP']);
+        $ip = Ip::firstWhere('ip_hash',$ip_hash);
+
+        return $ip?->status;
+    }
+
 }

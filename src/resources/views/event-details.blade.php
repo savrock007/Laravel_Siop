@@ -13,11 +13,12 @@
                 <p><strong class="text-gray-700 dark:text-gray-300">Timestamp:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $event->created_at }}</span></p>
                 <p><strong class="text-gray-700 dark:text-gray-300">IP Address:</strong> <span
-                        class="text-gray-900 dark:text-gray-100">{{ $meta['IP'] ?? 'N/A' }}</span></p>
+                        class="text-gray-900 dark:text-gray-100">{{ $meta['IP'] ?? 'N/A' }} {{$ip_status != null ? "($ip_status)" : ""}}</span>
+                </p>
                 <p><strong class="text-gray-700 dark:text-gray-300">User:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $meta['User'] ?? 'Guest' }}</span></p>
                 <p><strong class="text-gray-700 dark:text-gray-300">Route:</strong> <span
-                        class="text-gray-900 dark:text-gray-100">{{ $meta['route'] ?? 'Unknown' }}</span></p>
+                        class="text-gray-900 dark:text-gray-100">{{ $meta['Route'] ?? 'Unknown' }}</span></p>
             </div>
             <div class="mt-6">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Raw Metadata</h3>
@@ -38,14 +39,14 @@
                 <form action="{{ route('siop-events.block-ip', $event->id) }}" method="POST"
                       onsubmit="return confirm('Block this IP?');">
                     @csrf
-                    <button class="px-6 py-2 bg-yellow-600 text-white rounded-lg shadow hover:bg-yellow-700">Block IP
+                    <button class="px-6 py-2 bg-yellow-600 text-white rounded-lg shadow hover:bg-yellow-700" {{$ip_status == 'blocked' ? 'hidden' : ''}}>Block IP
                     </button>
                 </form>
 
                 <form action="{{ route('siop-events.whitelist-ip', $event->id) }}" method="POST"
                       onsubmit="return confirm('Whitelist this IP?');">
                     @csrf
-                    <button class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">Whitelist
+                    <button class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"  {{$ip_status != 'blocked' ? 'hidden' : ''}}>Whitelist
                         IP
                     </button>
                 </form>
