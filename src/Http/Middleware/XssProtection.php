@@ -10,7 +10,7 @@ class XssProtection
 {
     protected array $excludedKeys = ['cookie'];
 
-    public function handle(Request $request, Closure $next, $mode = 'block', $report = true)
+    public function handle(Request $request, Closure $next, $mode = 'clean', $report = true)
     {
         $headers = [];
         foreach ($request->headers->all() as $key => $value) {
@@ -19,12 +19,18 @@ class XssProtection
 
         $input = array_merge($request->all(), $headers);
 
+
         foreach ($input as $key => $value) {
-            if (in_array($key, $this->excludedKeys, true)) {
+
+            if (in_array($key, $this->excludedKeys, true) || !$value) {
                 continue;
             }
 
-            if ($this->containsXss($value)) {
+
+            $htmlPurifier = new \HTMLPurifier();
+            $clean = $htmlPurifier->purify($value);
+            
+            if ($clean != $value) {
                 if ($report) {
                     $additional_meta = ['malicious_input' => [$key => $value]];
 
@@ -34,8 +40,7 @@ class XssProtection
                 if ($mode === 'block') {
                     abort(403, 'XSS detected and blocked.');
                 } elseif ($mode === 'clean') {
-                    $cleanInput = htmlspecialchars((string)$value);
-                    $request->merge([$key => $cleanInput]);
+                    $request->merge([$key => $clean]);
                 }
             }
         }
