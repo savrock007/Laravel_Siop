@@ -1,7 +1,7 @@
 {
     "name": "savrock/siop",
     "description": "Laravel Security Package",
-    "version": "0.5.85",
+    "version": "0.5.852",
     "type": "library",
     "autoload": {
         "psr-4": {

@@ -13,7 +13,8 @@ return [
     'sql_injection_severity' => 'medium',
     "honeypot_severity" => 'high',
 
-    'enable_ip_block' => 'false',
+
+    'blocking_method' => 'fail2ban', //middleware or fail2ban
 
     'block_time' => 100,
     "block_time_unit" => 'year',

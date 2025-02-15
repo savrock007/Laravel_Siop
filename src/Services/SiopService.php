@@ -2,7 +2,6 @@
 
 namespace Savrock\Siop\Services;
 
-use Carbon\Carbon;
 use Savrock\Siop\Events\NewSecurityEvent;
 use Savrock\Siop\MetaGenerator;
 use Savrock\Siop\Models\Ip;
@@ -33,6 +32,11 @@ class SiopService
      */
     public static function blockIP(string $ip, string $expires_at = null)
     {
+        if (config('siop.blocking_method') === 'fail2ban') {
+            self::logForFail2Ban($ip);
+            return;
+        }
+
         if ($expires_at == null) {
             $expires_at = now()->add(config('siop.block_time'), config('siop.block_time_unit'));
         }
@@ -52,6 +56,14 @@ class SiopService
     public static function unblockIP(string $ip)
     {
         Ip::where('ip_hash', hash('sha256', $ip))?->delete();
+    }
+
+    protected static function logForFail2Ban(string $ip): void
+    {
+        $logFile = config('siop.fail2ban_log_path', storage_path('logs/fail2ban.log'));
+        $logMessage = sprintf("[%s] Blocked IP: %s", now()->toDateTimeString(), $ip);
+
+        file_put_contents($logFile, $logMessage . PHP_EOL, FILE_APPEND | LOCK_EX);
     }
 
 }

@@ -4,6 +4,7 @@ namespace Savrock\Siop\Http\Controllers;
 
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Savrock\Siop\Facades\Siop;
 
 
