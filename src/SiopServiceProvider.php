@@ -29,9 +29,7 @@ class SiopServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'siop');
 
         $this->publishes([__DIR__ . '/../config/siop.php' => config_path('siop.php')]);
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/siop.php', 'siop'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../config/siop.php', 'siop');
 
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('siop.xss', XssProtection::class);

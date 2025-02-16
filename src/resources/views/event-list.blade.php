@@ -80,7 +80,6 @@
                     <th class="p-3 border-b cursor-pointer" onclick="sortTable('severity')">Severity</th>
                     <th class="p-3 border-b">IP Address</th>
                     <th class="p-3 border-b">User</th>
-                    <th class="p-3 border-b hidden lg:block">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -93,9 +92,6 @@
                         <td class="p-3 text-{{ $event->severity === 'high' ? 'red-500' : ($event->severity === 'medium' ? 'yellow-500' : 'green-500') }}">{{ ucfirst($event->severity) }}</td>
                         <td class="p-3">{{ $event->meta['IP'] ?? 'N/A' }}</td>
                         <td class="p-3">{{ $event->meta['User'] ?? 'Guest' }}</td>
-                        <td class="p-3 hidden lg:block">
-                            <a href="{{ route('siop-events.show', $event->id) }}" class="text-blue-600 hover:underline">View</a>
-                        </td>
                     </tr>
                 @endforeach
                 </tbody>

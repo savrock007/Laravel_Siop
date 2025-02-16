@@ -16,6 +16,7 @@ class BlockIps
             return $next($request);
         }
 
+
         $request_ip_hash = hash('sha256', $request->ip());
 
         $cacheKey = "blocked_ip:{$request_ip_hash}";

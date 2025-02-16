@@ -2,6 +2,7 @@
 
 namespace Savrock\Siop\Facades;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Facade;
 
 /**

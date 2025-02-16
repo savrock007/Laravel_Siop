@@ -6,20 +6,20 @@
         <div class="mb-6 flex justify-start items-end space-x-4">
             <div>
                 <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                <input type="text" id="start-date" name="start_date"
-                       class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="date" id="start-date" name="start_date"
+                       class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
             </div>
 
             <div>
                 <label for="end-date" class="block text-sm font-medium text-gray-700">End Date</label>
-                <input type="text" id="end-date" name="end_date"
-                       class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="date" id="end-date" name="end_date"
+                       class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
             </div>
 
-                <button id="apply-date-range"
-                        class="ml-4 py-2.5 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Apply
-                </button>
+            <button id="apply-date-range"
+                    class="ml-4 py-2.5 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Apply
+            </button>
 
         </div>
 

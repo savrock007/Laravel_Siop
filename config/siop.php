@@ -6,7 +6,7 @@ return [
     'entry_route' => 'security',
 
     //Middleware that determines who can access security dashboard
-    'middleware' => ['web', 'auth'],
+    'middleware' => ['web', 'auth.basic'],
 
     //Default severity for XSS attacks
     'xss_severity' => 'medium',
@@ -16,6 +16,7 @@ return [
 
     'blocking_method' => 'fail2ban', //middleware or fail2ban
 
+    //block time for middleware blocking method
     'block_time' => 100,
     "block_time_unit" => 'year',
 

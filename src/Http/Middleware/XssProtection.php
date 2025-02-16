@@ -12,6 +12,7 @@ class XssProtection
 
     public function handle(Request $request, Closure $next, $mode = 'clean', $report = true)
     {
+
         $headers = [];
         foreach ($request->headers->all() as $key => $value) {
             $headers[$key] = is_array($value) ? implode(', ', $value) : $value;
@@ -29,7 +30,7 @@ class XssProtection
 
             $htmlPurifier = new \HTMLPurifier();
             $clean = $htmlPurifier->purify($value);
-            
+
             if ($clean != $value) {
                 if ($report) {
                     $additional_meta = ['malicious_input' => [$key => $value]];
@@ -38,6 +39,7 @@ class XssProtection
                 }
 
                 if ($mode === 'block') {
+                    Siop::blockIP($request->ip());
                     abort(403, 'XSS detected and blocked.');
                 } elseif ($mode === 'clean') {
                     $request->merge([$key => $clean]);

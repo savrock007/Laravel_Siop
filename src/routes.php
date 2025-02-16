@@ -12,6 +12,7 @@ Route::group(
     [
         'prefix' => config('siop.entry_route'),
         'middleware' => config('siop.middleware'),
+
     ],
     function (){
         //Dashboard
