@@ -13,8 +13,8 @@ class MetaGenerator
 
         return [
             'IP' => $request->ip(),
-            'User' => Auth::user()?->id ?? null,
-            'Route' => $request->route()->uri() ?? 'unknown',
+            'User' => request()->user()?->id ?? null,
+            'Route' => $request->uri()->path() ?? 'unknown',
             'Method' => $request->method(),
 //            'Headers' => $request->headers->all()
         ];
