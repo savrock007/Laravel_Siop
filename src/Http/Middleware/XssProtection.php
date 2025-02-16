@@ -4,7 +4,8 @@ namespace Savrock\Siop\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Savrock\Siop\Facades\Siop;
+use Savrock\Siop\Siop;
+
 
 class XssProtection
 {

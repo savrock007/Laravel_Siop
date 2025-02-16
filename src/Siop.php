@@ -1,13 +1,42 @@
 <?php
 
-namespace Savrock\Siop\Services;
+namespace Savrock\Siop;
 
+use Closure;
 use Savrock\Siop\Events\NewSecurityEvent;
-use Savrock\Siop\MetaGenerator;
 use Savrock\Siop\Models\Ip;
 
-class SiopService
+class Siop
 {
+    /**
+     * The callback that should be used to authenticate Siop users.
+     *
+     * @var \Closure
+     */
+    public static $authUsing;
+
+    public static function check($request)
+    {
+        return (static::$authUsing ?: function () {
+            return app()->environment('local');
+        })($request);
+    }
+
+
+    /**
+     * Set the callback that should be used to authenticate Siop users.
+     *
+     * @param \Closure $callback
+     * @return static
+     */
+    public static function auth(Closure $callback)
+    {
+        static::$authUsing = $callback;
+
+        return new static;
+    }
+
+
     /**
      * @param string $message
      * @param array $meta
@@ -15,7 +44,7 @@ class SiopService
      * @param string $severity
      * @return void
      */
-    public function dispatchSecurityEvent(string $message, array $meta = [], string $category = 'custom', string $severity = 'low'): void
+    public static function dispatchSecurityEvent(string $message, array $meta = [], string $category = 'custom', string $severity = 'low'): void
     {
         /** @var MetaGenerator $metaGenerator */
         $metaGenerator = new (config("siop.meta_generator", MetaGenerator::class));

@@ -2,6 +2,7 @@
 
 namespace Savrock\Siop;
 
+use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -12,7 +13,6 @@ use Savrock\Siop\Http\Middleware\BlockIps;
 use Savrock\Siop\Http\Middleware\SqlInjectionProtection;
 use Savrock\Siop\Http\Middleware\XssProtection;
 use Savrock\Siop\Listeners\SecurityEventListener;
-use Savrock\Siop\Services\SiopService;
 
 class SiopServiceProvider extends ServiceProvider
 {
@@ -23,13 +23,12 @@ class SiopServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->registerEvents();
+        $this->registerRoutes();
+        $this->registerResources();
+        $this->offerPublishing();
+        $this->registerCommands();
 
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'siop');
-
-        $this->publishes([__DIR__ . '/../config/siop.php' => config_path('siop.php')]);
-        $this->mergeConfigFrom(__DIR__ . '/../config/siop.php', 'siop');
 
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('siop.xss', XssProtection::class);
@@ -45,8 +44,59 @@ class SiopServiceProvider extends ServiceProvider
             SqlInjectionProtection::class,
         ]);
 
+
+    }
+
+    public function registerEvents()
+    {
         Event::listen(NewSecurityEvent::class, SecurityEventListener::class);
 
+    }
+
+    public function registerRoutes()
+    {
+
+        if ($this->app instanceof CachesRoutes && $this->app->routesAreCached()) {
+            return;
+        }
+
+        Route::group([
+            'domain' => config('siop.domain', null),
+            'prefix' => config('siop.path'),
+            'namespace' => 'Savrock\Siop\Http\Controllers',
+            'middleware' => config('siop.middleware', 'web'),
+        ], function () {
+            $this->loadRoutesFrom(__DIR__ . '/routes/routes.php');
+        });
+    }
+
+    protected function registerResources()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadViewsFrom(__DIR__ . '/resources/views', 'siop');
+    }
+
+    protected function offerPublishing()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../stubs/SiopServiceProvider.stub' => app_path('Providers/SiopServiceProvider.php'),
+            ], 'siop-provider');
+
+            $this->publishes([
+                __DIR__ . '/../config/siop.php' => config_path('siop.php'),
+            ], 'siop-config');
+        }
+    }
+
+    protected function registerCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Console\InstallCommand::class,
+
+            ]);
+        }
     }
 
     /**
@@ -54,14 +104,6 @@ class SiopServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
-    {
-        $this->app->singleton('siop', function () {
-            return new SiopService();
-        });
-
-        app('router')->aliasMiddleware('xss', XssProtection::class);
-    }
 
     protected function registerHoneypotRoutes()
     {

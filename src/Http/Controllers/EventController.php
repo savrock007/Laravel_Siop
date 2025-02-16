@@ -5,12 +5,18 @@ namespace Savrock\Siop\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Savrock\Siop\Facades\Siop;
+use Savrock\Siop\Http\Middleware\Authenticate;
+use Savrock\Siop\Siop;
 use Savrock\Siop\Models\SecurityEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EventController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(Authenticate::class);
+    }
+
     public function list(Request $request)
     {
         $query = SecurityEvent::query();

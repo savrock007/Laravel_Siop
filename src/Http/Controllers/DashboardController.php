@@ -6,10 +6,16 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Savrock\Siop\Http\Middleware\Authenticate;
 use Savrock\Siop\Models\SecurityEvent;
+
 
 class DashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(Authenticate::class);
+    }
 
     public function index()
     {

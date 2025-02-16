@@ -1,7 +1,7 @@
 {
     "name": "savrock/siop",
     "description": "Laravel Security Package",
-    "version": "0.5.854",
+    "version": "0.5.88",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -21,10 +21,10 @@
         "laravel": {
             "providers": [
                 "Savrock\\Siop\\SiopServiceProvider"
-            ],
-            "aliases": {
-                "Siop": "Savrock\\Siop\\Facades\\Siop"
-            }
+            ]
+        },
+        "aliases": {
+            "Siop": "Savrock\\Siop\\Siop"
         }
     }
 }

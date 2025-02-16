@@ -102,7 +102,8 @@
 
         // Function to fetch chart data and update charts
         function fetchChartData(startDate, endDate) {
-            fetch(`/security/dashboard/data?period=custom&start=${startDate}&end=${endDate}`)
+            let route = "{{route('siop-dashboard.data')}}"
+            fetch(route + `?period=custom&start=${startDate}&end=${endDate}`)
                 .then(response => response.json())
                 .then(data => {
                     clearCharts(); // Clear existing charts before updating

@@ -9,13 +9,11 @@ use Savrock\Siop\Models\SecurityEvent;
 class SecurityEventListener implements ShouldQueue
 {
     public $tries = 1;
-    public $queue = 'default';
+    public $queue = 'security_events';
 
-//    private Notifier $notifier;
 
     public function __construct()
     {
-//        $this->notifier = new (config("siop.notifier", Notifier::class));
     }
 
 
@@ -30,11 +28,6 @@ class SecurityEventListener implements ShouldQueue
 
         $securityEvent->save();
 
-
-//        //notify of category is configured to send notifications
-//        if (config('siop.notifications.' . $event->category, false)) {
-//            $this->notifier->notify($event);
-//        }
     }
 
 
