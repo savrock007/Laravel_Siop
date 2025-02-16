@@ -8,7 +8,7 @@ return [
    |--------------------------------------------------------------------------
    |
    | This is the subdomain where Horizon will be accessible from. If this
-   | setting is null, Horizon will reside under the same domain as the
+   | setting is null, Siop will reside under the same domain as the
    | application. Otherwise, this value will serve as the subdomain.
    |
    */
@@ -18,10 +18,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Horizon Path
+    | Siop Path
     |--------------------------------------------------------------------------
     |
-    | This is the URI path where Horizon will be accessible from. Feel free
+    | This is the URI path where Siop will be accessible from. Feel free
     | to change this path to anything you like. Note that the URI will not
     | affect the paths of its internal API that aren't exposed to users.
     |
@@ -31,10 +31,10 @@ return [
 
     /*
    |--------------------------------------------------------------------------
-   | Horizon Route Middleware
+   | Siop Route Middleware
    |--------------------------------------------------------------------------
    |
-   | These middleware will get attached onto each Horizon route, giving you
+   | These middleware will get attached onto each Siop route, giving you
    | the chance to add your own middleware to this list or change any of
    | the existing middleware. Or, you can simply stick with this list.
    |
@@ -42,18 +42,45 @@ return [
 
     'middleware' => ['web'],
 
-    //Default severity for XSS attacks
+
+    /*
+   |--------------------------------------------------------------------------
+   | Siop Severity Configuration
+   |--------------------------------------------------------------------------
+   |
+   | These parameters determine severity that will be set to specified security event types
+   |
+   */
     'xss_severity' => 'medium',
     'sql_injection_severity' => 'medium',
     "honeypot_severity" => 'high',
 
+    /*
+   |--------------------------------------------------------------------------
+   | Siop Block Method
+   |--------------------------------------------------------------------------
+   |
+   | This parameter determines the method that will be used to block IPs
+   |  Fail2Ban - will log IPs to ban, requires additional configuration
+   |  middleware - will block IPs using middleware, does not require any additional configuration, however has much worse performance
+   |
+   */
 
     'blocking_method' => 'fail2ban', //middleware or fail2ban
 
-    //block time for middleware blocking method
+
+    /*
+  |--------------------------------------------------------------------------
+  | Siop Block Time
+  |--------------------------------------------------------------------------
+  |
+  | These parameters determine default time for IP blocking when middleware block method is chosen
+  |
+  */
     'block_time' => 100,
     "block_time_unit" => 'year',
 
+    
     //Specify generator class for metadata
     'meta_generator' => \Savrock\Siop\MetaGenerator::class,
 
