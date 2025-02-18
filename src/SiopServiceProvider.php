@@ -3,6 +3,7 @@
 namespace Savrock\Siop;
 
 use Illuminate\Contracts\Foundation\CachesRoutes;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,7 @@ use Illuminate\Support\ServiceProvider;
 use Savrock\Siop\Events\NewSecurityEvent;
 use Savrock\Siop\Http\Controllers\HoneypotController;
 use Savrock\Siop\Http\Middleware\BlockIps;
+use Savrock\Siop\Http\Middleware\SiopThrottleRequests;
 use Savrock\Siop\Http\Middleware\SqlInjectionProtection;
 use Savrock\Siop\Http\Middleware\XssProtection;
 use Savrock\Siop\Listeners\SecurityEventListener;
@@ -34,6 +36,7 @@ class SiopServiceProvider extends ServiceProvider
         $router->aliasMiddleware('siop.xss', XssProtection::class);
         $router->aliasMiddleware('siop.sql', SqlInjectionProtection::class);
         $router->aliasMiddleware('siop.ip_block', BlockIps::class);
+        $router->aliasMiddleware('siop.throttle', SiopThrottleRequests::class);
 
         $this->registerHoneypotRoutes();
 

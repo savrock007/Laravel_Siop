@@ -15,8 +15,8 @@
                 <p><strong class="text-gray-700 dark:text-gray-300">IP Address:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $meta['IP'] ?? 'N/A' }} {{$ip_blocked ? "(blocked)" : ""}}</span>
                 </p>
-                <p><strong class="text-gray-700 dark:text-gray-300">User:</strong> <span
-                        class="text-gray-900 dark:text-gray-100">{{ $meta['User'] ?? 'Guest' }}</span></p>
+                <p><strong class="text-gray-700 dark:text-gray-300">Message:</strong> <span
+                        class="text-gray-900 dark:text-gray-100">{{ $event->message }}</span></p>
                 <p><strong class="text-gray-700 dark:text-gray-300">Route:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $meta['Route'] ?? 'Unknown' }}</span></p>
             </div>
