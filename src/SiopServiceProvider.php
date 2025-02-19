@@ -3,17 +3,18 @@
 namespace Savrock\Siop;
 
 use Illuminate\Contracts\Foundation\CachesRoutes;
-use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Savrock\Siop\Events\NewSecurityEvent;
+use Savrock\Siop\Events\PatternAnalysisEvent;
 use Savrock\Siop\Http\Controllers\HoneypotController;
 use Savrock\Siop\Http\Middleware\BlockIps;
 use Savrock\Siop\Http\Middleware\SiopThrottleRequests;
 use Savrock\Siop\Http\Middleware\SqlInjectionProtection;
 use Savrock\Siop\Http\Middleware\XssProtection;
+use Savrock\Siop\Listeners\PatternAnalysisListener;
 use Savrock\Siop\Listeners\SecurityEventListener;
 
 class SiopServiceProvider extends ServiceProvider
@@ -52,6 +53,7 @@ class SiopServiceProvider extends ServiceProvider
 
     public function registerEvents()
     {
+        Event::listen(PatternAnalysisEvent::class, PatternAnalysisListener::class);
         Event::listen(NewSecurityEvent::class, SecurityEventListener::class);
 
     }
@@ -110,6 +112,11 @@ class SiopServiceProvider extends ServiceProvider
 
     protected function registerHoneypotRoutes()
     {
+        if (!config('siop.enable_honeypots')) {
+            return;
+        }
+
+
         $routes = config('siop.honeypot_routes', []);
 
         foreach ($routes as $route) {

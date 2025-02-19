@@ -69,7 +69,7 @@
         <ul>
             <li><a href="{{route('siop-dashboard.index')}}" class="block px-4 py-2">Dashboard</a></li>
             <li><a href="{{route('siop-events.list')}}" class="block px-4 py-2">Events</a></li>
-            <li><a href="#" class="block px-4 py-2">Settings</a></li>
+            <li><a href="{{route('siop.patterns.index')}}" class="block px-4 py-2">Patterns</a></li>
             <li><a href="#" class="block px-4 py-2">Logout</a></li>
         </ul>
     </nav>

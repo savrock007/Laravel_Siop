@@ -80,7 +80,7 @@ return [
     'block_time' => 100,
     "block_time_unit" => 'year',
 
-    
+
     //Specify generator class for metadata
     'meta_generator' => \Savrock\Siop\MetaGenerator::class,
 
@@ -92,9 +92,13 @@ return [
     ],
 
     //Honeypot routes
+    'enable_honeypots' => false,
     'honeypot_routes' => [
         'wp-admin',
         'wp-login.php',
         'private-api',
     ],
+
+
+    'enable_pattern_analysis' => false,
 ];

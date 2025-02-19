@@ -48,7 +48,8 @@ class Siop
     {
         /** @var MetaGenerator $metaGenerator */
         $metaGenerator = new (config("siop.meta_generator", MetaGenerator::class));
-        $meta = array_merge($meta, $metaGenerator->generateMetadata());
+        $meta = array_replace_recursive($metaGenerator->generateMetadata(),$meta);
+
 
         event(new NewSecurityEvent($message, $meta, $category, $severity));
     }
