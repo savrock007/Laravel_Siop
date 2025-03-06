@@ -24,7 +24,7 @@ class DashboardController extends Controller
 
     public function showDashboardData(Request $request)
     {
-        $period = $request->input('period', 'today');
+        $period = $request->input('period', 'this_week');
         $startDate = null;
         $endDate = null;
 
