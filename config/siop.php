@@ -70,17 +70,33 @@ return [
 
 
     /*
-  |--------------------------------------------------------------------------
-  | Siop Block Time
-  |--------------------------------------------------------------------------
-  |
-  | These parameters determine default time for IP blocking when middleware block method is chosen
-  |
-  */
-    'block_time' => 100,
-    "block_time_unit" => 'year',
+    |--------------------------------------------------------------------------
+    | Siop Fail2Ban integration settings
+    |--------------------------------------------------------------------------
+    |
+    | These parameters are required for integration with fail2ban
+    |
+    */
+    'fail2ban_log_path' => 'logs/fail2ban.log',
+    'fail2ban_ban_time' => '10m',
 
-    
+
+    /*
+    |--------------------------------------------------------------------------
+    | Siop Block Time
+    |--------------------------------------------------------------------------
+    |
+    | These parameters determine default time for IP blocking when middleware block method is chosen
+    |
+    */
+    'block_time' => '100y',
+
+
+
+
+
+
+
     //Specify generator class for metadata
     'meta_generator' => \Savrock\Siop\MetaGenerator::class,
 
