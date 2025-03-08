@@ -1,23 +1,23 @@
 @extends('siop::layouts.app')
 
 @section('content')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="container mx-auto px-4 py-8">
-        <!-- Date Range Selector (Improved UI) -->
-        <div class="mb-6 flex justify-start items-end space-x-4">
-            <div>
+        <div class="mb-6 flex flex-col lg:flex-row justify-start items-center lg:items-end lg:space-x-4">
+            <div class="w-full lg:w-auto">
                 <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
                 <input type="date" id="start-date" name="start_date"
                        class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
             </div>
 
-            <div>
+            <div class="w-full lg:w-auto">
                 <label for="end-date" class="block text-sm font-medium text-gray-700">End Date</label>
                 <input type="date" id="end-date" name="end_date"
                        class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
             </div>
 
             <button id="apply-date-range"
-                    class="ml-4 py-2.5 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="mt-4 lg:mt-0 w-full lg:w-auto py-2.5 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 Apply
             </button>
 
@@ -26,19 +26,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-            <!-- Event Type Breakdown Chart -->
             <div class="bg-white shadow-sm rounded-lg p-4">
                 <h3 class="text-xl font-semibold mb-4">Event Type Breakdown</h3>
                 <canvas id="eventTypeChart"></canvas>
             </div>
 
-            <!-- Event Severity Breakdown Chart -->
             <div class="bg-white shadow-md rounded-lg p-4">
                 <h3 class="text-xl font-semibold mb-4">Event Severity Breakdown</h3>
                 <canvas id="eventSeverityChart"></canvas>
             </div>
 
-            <!-- Events Over Time Chart -->
             <div class="bg-white shadow-md rounded-lg p-4">
                 <h3 class="text-xl font-semibold mb-4">Events Over Time</h3>
                 <canvas id="eventsOverTimeChart"></canvas>
@@ -47,8 +44,6 @@
         </div>
     </div>
 
-    <!-- Include Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         let eventTypeChart, eventSeverityChart, eventsOverTimeChart;

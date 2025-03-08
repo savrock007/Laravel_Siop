@@ -53,11 +53,6 @@
                         <input type="text" id="ip" name="ip"
                                class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
-                    <div>
-                        <label for="user" class="block text-gray-700 dark:text-gray-300">User</label>
-                        <input type="text" id="user" name="user"
-                               class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
-                    </div>
                     <div class="md:col-span-3 flex justify-end">
                         <button type="submit"
                                 class="mt-6 py-2 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Apply Filters
@@ -73,13 +68,13 @@
                 <thead>
                 <tr>
                     <th class="p-3 border-b" onclick="sortTable('id')">ID</th>
-                    <th class="p-3 border-b cursor-pointer hidden lg:block" onclick="sortTable('created_at')">
+                    <th class="p-3 border-b cursor-pointer hidden lg:flex" onclick="sortTable('created_at')">
                         Timestamp
                     </th>
                     <th class="p-3 border-b cursor-pointer" onclick="sortTable('category')">Type</th>
+                    <th class="p-3 border-b cursor-pointer hidden lg:flex">Message</th>
                     <th class="p-3 border-b cursor-pointer" onclick="sortTable('severity')">Severity</th>
-                    <th class="p-3 border-b">IP Address</th>
-                    <th class="p-3 border-b">User</th>
+                    <th class="p-3 border-b">IP</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -87,11 +82,11 @@
                     <tr class="border-t hover:bg-gray-100 dark:hover:bg-gray-700"
                         onclick="window.location = '{{route('siop-events.show', $event->id)}}'">
                         <td class="p-3">{{ $event->id }}</td>
-                        <td class="p-3 hidden lg:block">{{ $event->created_at }}</td>
+                        <td class="p-3 hidden lg:flex">{{ $event->created_at }}</td>
                         <td class="p-3">{{ ucfirst($event->category) }}</td>
+                        <td class="p-3 hidden lg:flex">{{ ucfirst($event->message) }}</td>
                         <td class="p-3 text-{{ $event->severity === 'high' ? 'red-500' : ($event->severity === 'medium' ? 'yellow-500' : 'green-500') }}">{{ ucfirst($event->severity) }}</td>
                         <td class="p-3">{{ $event->meta['IP'] ?? 'N/A' }}</td>
-                        <td class="p-3">{{ $event->meta['User'] ?? 'Guest' }}</td>
                     </tr>
                 @endforeach
                 </tbody>

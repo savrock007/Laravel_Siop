@@ -5,9 +5,11 @@ namespace Savrock\Siop\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Savrock\Siop\Http\Middleware\Authenticate;
-use Savrock\Siop\Siop;
 use Savrock\Siop\Models\SecurityEvent;
+use Savrock\Siop\Siop;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EventController extends Controller
@@ -21,39 +23,60 @@ class EventController extends Controller
     {
         $query = SecurityEvent::query();
 
-        if ($request->has('event_type') && $request->type !== null) {
+        if ($request->has('start_date') && $request->start_date != null) {
+            $query->where('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->has('end_date') && $request->end_date != null) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        if ($request->has('event_type') && $request->event_type != null) {
             $query->where('category', $request->event_type);
         }
 
-        if ($request->has('severity') && $request->severity !== null) {
+        if ($request->has('severity') && $request->severity != null) {
             $query->where('severity', $request->severity);
         }
 
-        if ($request->has('ip') && !empty($request->ip)) {
-            $query->where('ip_address', 'like', "%{$request->ip}%");
-        }
+        $events = $query->orderBy('id')->get();
 
-        if ($request->has('route') && !empty($request->route)) {
-            $query->where('route', 'like', "%{$request->route}%");
-        }
+        $events = $events->filter(function ($event) use ($request) {
+            if ($request->input('ip') != null && ($event->meta['IP'] ?? null) !== $request->input('ip')) {
+                return false;
+            }
 
-        if ($request->has('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
+            if ($request->input('route') != null && ($event->meta['Route'] ?? null) !== $request->input('route')) {
+                return false;
+            }
+            return true;
+        });
 
-        if ($request->has('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $sortColumn = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-        $query->orderBy($sortColumn, $sortOrder);
+//        $sortColumn = $request->get('sort', 'created_at');
+//        $sortOrder = $request->get('order', 'desc');
+//        $events->sortBy($sortColumn, $sortOrder);
 
 
-        $events = $query->paginate(15);
+        $events = self::paginateCollection($events, 15);
         $eventTypes = SecurityEvent::pluck('category')->unique();
 
         return view('siop::event-list', compact('events', 'eventTypes'));
+    }
+
+    private static function paginateCollection(Collection $items, int $perPage = 10, ?int $page = null)
+    {
+        $page = $page ?: request()->get('page', 1);
+        $total = $items->count();
+
+        $paginatedItems = $items->forPage($page, $perPage);
+
+        return new LengthAwarePaginator(
+            $paginatedItems,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
     }
 
     public function show($event)
