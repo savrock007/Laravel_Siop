@@ -20,12 +20,12 @@
                       class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="start-date" class="block text-gray-700 dark:text-gray-300">Start Date</label>
-                        <input type="date" id="start-date" name="start_date"
+                        <input type="date" id="start-date" name="start_date" value="{{ request('start_date') }}"
                                class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
                     <div>
                         <label for="end-date" class="block text-gray-700 dark:text-gray-300">End Date</label>
-                        <input type="date" id="end-date" name="end_date"
+                        <input type="date" id="end-date" name="end_date" value="{{ request('end_date') }}"
                                class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
                     <div>
@@ -33,9 +33,9 @@
                         <select id="severity" name="severity"
                                 class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                             <option value="">All</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
+                            <option value="low" {{ request('severity') === 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="medium" {{ request('severity') === 'medium' ? 'selected' : '' }}>Medium</option>
+                            <option value="high" {{ request('severity') === 'high' ? 'selected' : '' }}>High</option>
                         </select>
                     </div>
                     <div>
@@ -44,13 +44,15 @@
                                 class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                             <option value="">All</option>
                             @foreach($eventTypes as $type)
-                                <option value="{{ $type }}">{{ ucfirst($type) }}</option>
+                                <option value="{{ $type }}" {{ request('event_type') === $type ? 'selected' : '' }}>
+                                    {{ ucfirst($type) }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label for="ip" class="block text-gray-700 dark:text-gray-300">IP Address</label>
-                        <input type="text" id="ip" name="ip"
+                        <input type="text" id="ip" name="ip" value="{{ request('ip') }}"
                                class="mt-1 block w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white">
                     </div>
                     <div class="md:col-span-3 flex justify-end">
@@ -59,6 +61,16 @@
                         </button>
                     </div>
                 </form>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2">
+                @foreach(request()->except('page') as $key => $value)
+                    @if($value)
+                        <span class="flex items-center bg-blue-200 text-blue-800 px-3 py-1 rounded-lg text-sm">
+                                {{ ucfirst(str_replace('_', ' ', $key)) }}: {{ $value }}
+                                <button type="button" class="ml-2 text-red-500" onclick="removeFilter('{{ $key }}')">✕</button>
+                            </span>
+                    @endif
+                @endforeach
             </div>
         </div>
 
@@ -125,6 +137,13 @@
                     content.style.display = "block";
                 }
             });
+        }
+    </script>
+    <script>
+        function removeFilter(filterKey) {
+            let url = new URL(window.location.href);
+            url.searchParams.delete(filterKey);
+            window.location.href = url.toString();
         }
     </script>
 
