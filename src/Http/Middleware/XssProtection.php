@@ -4,6 +4,7 @@ namespace Savrock\Siop\Http\Middleware;
 
 use Closure;
 use Illuminate\Foundation\Http\Middleware\TransformsRequest;
+use Savrock\Siop\Models\SiopSettings;
 use Savrock\Siop\Siop;
 
 
@@ -17,25 +18,27 @@ class XssProtection extends TransformsRequest
 
     public function handle($request, Closure $next, $mode = 'clean', $report = true)
     {
-        $start = microtime(true);
         $this->mode = $mode;
         $this->report = $report;
 
 
         $this->clean($request);
 
-
-        if (!empty($this->malicious)) {
-            if ($this->report) {
-                $additional_meta = ['malicious_input' => $this->malicious];
-                Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
-            }
-
-            if ($this->mode === 'block') {
-                Siop::blockIP($request->ip());
-                abort(403, 'XSS detected and blocked.');
-            }
+        if (empty($this->malicious)) {
+            return $next($request);
         }
+
+
+        if ($this->report) {
+            $additional_meta = ['malicious_input' => $this->malicious];
+                Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
+        }
+
+        if ($this->mode === 'block') {
+            Siop::blockIP($request->ip());
+            abort(403, 'XSS detected and blocked.');
+        }
+
 
         return $next($request);
 
