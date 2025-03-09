@@ -2,7 +2,9 @@
 
 namespace Savrock\Siop;
 
+use Carbon\Carbon;
 use Closure;
+use Exception;
 use Savrock\Siop\Events\NewSecurityEvent;
 use Savrock\Siop\Models\Ip;
 
@@ -55,6 +57,32 @@ class Siop
     }
 
 
+    private static function calculateExpiresAt(string $input): Carbon
+    {
+        if ($input == '-1') {
+            return Carbon::now()->addYears(100);
+        }
+
+
+        preg_match('/^(\d+)([smhdwy])$/', strtolower($input), $matches);
+
+        [$full, $value, $unit] = $matches;
+        $value = (int)$value;
+
+        $now = Carbon::now();
+
+        return match ($unit) {
+            's' => $now->addSeconds($value),
+            'm' => $now->addMinutes($value),
+            'h' => $now->addHours($value),
+            'd' => $now->addDays($value),
+            'w' => $now->addWeeks($value),
+            'y' => $now->addYears($value),
+            default => throw new Exception("Unsupported time unit: $unit"),
+        };
+    }
+
+
     /**
      * @param string $ip
      * @param string|null $expires_at
@@ -62,19 +90,26 @@ class Siop
      */
     public static function blockIP(string $ip, string $expires_at = null)
     {
-        if (config('siop.blocking_method') === 'fail2ban') {
-            self::logForFail2Ban($ip);
-            return;
+        $ban_method = config('siop.blocking_method');
+
+        if ($ban_method === 'fail2ban') {
+            self::logBan($ip);
         }
 
         if ($expires_at == null) {
-            $expires_at = now()->add(config('siop.block_time'), config('siop.block_time_unit'));
+            if ($ban_method === 'fail2ban') {
+                $expires_at = self::calculateExpiresAt(config('siop.fail2ban_ban_time'));
+            } else {
+                $expires_at = self::calculateExpiresAt(config('siop.block_time'));
+            }
+
         }
 
         Ip::updateOrCreate([
             'ip_hash' => hash('sha256', $ip)
         ], [
             'ip' => $ip,
+            'ban_method' => $ban_method,
             'expires_at' => $expires_at,
         ]);
     }
@@ -85,13 +120,29 @@ class Siop
      */
     public static function unblockIP(string $ip)
     {
+
+        if (config('siop.blocking_method') === 'fail2ban') {
+            self::logUnban($ip);
+        }
+
         Ip::where('ip_hash', hash('sha256', $ip))?->delete();
     }
 
-    protected static function logForFail2Ban(string $ip): void
+    protected static function logBan(string $ip): void
     {
-        $logFile = config('siop.fail2ban_log_path', storage_path('logs/fail2ban.log'));
-        $logMessage = sprintf("[%s] Blocked IP: %s", now()->toDateTimeString(), $ip);
+        //TODO refactor pathing
+        $logFile = config(storage_path('siop.fail2ban_log_path'), storage_path('logs/fail2ban.log'));
+        $logMessage = sprintf("[%s] BAN_IP: %s", now()->toDateTimeString(), $ip);
+
+        file_put_contents($logFile, $logMessage . PHP_EOL, FILE_APPEND | LOCK_EX);
+    }
+
+
+    protected static function logUnban(string $ip): void
+    {
+        //TODO refactor pathing
+        $logFile = config(storage_path('siop.fail2ban_log_path'), storage_path('logs/fail2ban.log'));
+        $logMessage = sprintf("[%s] UNBAN_IP: %s", now()->toDateTimeString(), $ip);
 
         file_put_contents($logFile, $logMessage . PHP_EOL, FILE_APPEND | LOCK_EX);
     }

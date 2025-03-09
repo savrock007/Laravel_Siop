@@ -3,6 +3,11 @@
 @section('content')
     <div class="container mx-auto p-6">
         <h2 class="text-3xl font-semibold text-gray-800 dark:text-gray-200">Security Event Details</h2>
+        @if (session('success'))
+            <div class="mb-4 mt-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded-lg dark:bg-green-900 dark:border-green-600 dark:text-green-300">
+                <strong>Success:</strong> {!! session('success') !!}
+            </div>
+        @endif
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
             <div class="grid grid-cols-2 gap-4 text-lg">
                 <p><strong class="text-gray-700 dark:text-gray-300">Type:</strong> <span
