@@ -16,6 +16,7 @@ class Authenticate
     public function handle($request, $next)
     {
         if (! Siop::check($request)) {
+            Siop::dispatchSecurityEvent('Attempt to access Siop panel',[],'Access Control');
             abort(403,'Unauthorized');
         }
 
