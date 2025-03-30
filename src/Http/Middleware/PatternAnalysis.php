@@ -5,8 +5,8 @@ namespace Savrock\Siop\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 use Savrock\Siop\Events\PatternAnalysisEvent;
+use Savrock\Siop\Models\Ip;
 
 class PatternAnalysis
 {
@@ -17,11 +17,20 @@ class PatternAnalysis
         }
 
         $ip = $request->ip();
+
+        //START DEBUG ONLY
+        $ip = $request->header('X-Forwarded-For');
+        if (Ip::where('ip_hash', hash('sha256', $ip))->exists()) {
+            return response('Unauthorized', 403);
+        }
+        // END DEBUG ONLY
+
         $route = $request->path();
 
         $this->storeRequestHistory($ip, $route);
 
         if ($this->shouldTriggerEvent()) {
+//            dd('trigger');
             event(new PatternAnalysisEvent());
         }
 
@@ -34,7 +43,7 @@ class PatternAnalysis
     private function shouldTriggerEvent(): bool
     {
         $cacheKey = "security:pattern_analysis:last_event";
-        $cooldown = config('siop.pattern_analysis_cooldown', 1); // Default: 5 minutes
+        $cooldown = config('siop.pattern_analysis_cooldown');
 
         if (Cache::has($cacheKey)) {
             return false;
@@ -52,18 +61,14 @@ class PatternAnalysis
         $cacheKey = "security:patterns:all_requests";
         $entry = json_encode([
             'ip' => $ip,
+            'user' => \Auth::user()?->id,
             'route' => $route,
-            'timestamp' => now()->timestamp,
+            'timestamp' => microtime(true),
         ]) ?? [];
 
-        if (config('database.redis.client')) {
-            Redis::lpush($cacheKey, $entry);
-            Redis::ltrim($cacheKey, 0, 4999); // Keep only the last 5000 requests
-            Redis::expire($cacheKey, 600);
-        } else {
-            $history = Cache::get($cacheKey, []);
-            $history[] = $entry;
-            Cache::put($cacheKey, array_slice($history, -5000), now()->addMinutes(10));
-        }
+
+        $history = Cache::get($cacheKey, []);
+        $history[] = $entry;
+        Cache::put($cacheKey, array_slice($history, -5000), now()->addMinutes(config('siop.pattern_analysis_cooldown') + 1));
     }
 }

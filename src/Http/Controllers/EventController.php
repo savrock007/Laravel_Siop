@@ -39,7 +39,7 @@ class EventController extends Controller
             $query->where('severity', $request->severity);
         }
 
-        $events = $query->orderBy('id')->get();
+        $events = $query->orderBy('created_at','desc')->get();
 
         $events = $events->filter(function ($event) use ($request) {
             if ($request->input('ip') != null && ($event->meta['IP'] ?? null) !== $request->input('ip')) {
