@@ -91,7 +91,6 @@ return [
     */
     'block_time' => '100y',
 
-
     //Specify generator class for metadata
     'meta_generator' => \Savrock\Siop\MetaGenerator::class,
 

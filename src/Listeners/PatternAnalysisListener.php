@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Savrock\Siop\Events\PatternAnalysisEvent;
+use Savrock\Siop\Siop;
 
 class PatternAnalysisListener implements ShouldQueue
 {
@@ -18,8 +19,6 @@ class PatternAnalysisListener implements ShouldQueue
     private $cacheKeys = [
         'requests' => "security:patterns:all_requests",
         'RC' => "security:stats:rc",
-        'RCVariance' => "security:stats:rc_variance",
-        'TBR' => "security:stats:tbr",
         'TBRVariance' => "security:stats:tbr_variance",
     ];
 
@@ -28,24 +27,27 @@ class PatternAnalysisListener implements ShouldQueue
         'TBRVoV' => 100,
     ];
 
+    private array $history;
+
     public function handle(PatternAnalysisEvent $event)
     {
-        $history = $this->getUnanalyzedRequests();
-        if (!empty($history)) {
-            $this->calculateStatisticalData($history);
+        $this->history = $this->getUnanalyzedRequests();
+        if (!empty($this->history)) {
+            $this->calculateStatisticalData();
             $this->analyze();
         }
+
     }
 
     private function getUnanalyzedRequests(): array
     {
-        $history = Cache::pull($this->cacheKeys['requests'], []);
-        return array_map(fn($entry) => json_decode($entry, true), $history);
+        return Cache::pull($this->cacheKeys['requests'], []);
     }
 
-    private function calculateStatisticalData(array $history)
+    private function calculateStatisticalData()
     {
-        $groupedByIp = collect($history)->groupBy('ip')->toArray();
+
+        $groupedByIp = collect($this->history)->groupBy('ip')->toArray();
 
         foreach ($groupedByIp as $ip => $ip_requests) {
             $this->trackRequestCount($ip, $ip_requests);
@@ -55,29 +57,42 @@ class PatternAnalysisListener implements ShouldQueue
 
     private function trackRequestCount(string $ip, array $ip_requests)
     {
-        $requestCounts = $this->updateHistory($ip, count($ip_requests), 'RC');
-        if (count($requestCounts) >= 2) {
-            $this->updateVarianceHistory($ip, $requestCounts, 'RCVariance');
+        $currentRC = count($ip_requests);
+        $rcHistory = $this->updateHistory($ip, $currentRC, 'RC');
+
+        if (count($rcHistory) >= 5) { // Ensure enough history for comparison
+            $this->detectRequestSpike($ip, $rcHistory, $currentRC);
         }
     }
+
+    private function detectRequestSpike(string $ip, array $rcHistory, int $currentRC)
+    {
+        $historicalAvg = array_sum($rcHistory) / count($rcHistory);
+        $thresholdMultiplier = 2.; // Adjust sensitivity
+        $spikeThreshold = $historicalAvg * $thresholdMultiplier;
+
+        if ($currentRC > $spikeThreshold) {
+            Log::channel($this->logChannel)->warning("🚨 SPIKE DETECTED for $ip: $currentRC requests (Avg: $historicalAvg)");
+            $this->punish($ip);
+        }
+    }
+
 
     private function trackTimeBetweenRequests(string $ip, array $ip_requests)
     {
         $timestamps = array_column($ip_requests, 'timestamp');
         $timeDiffs = [];
         for ($i = 1; $i < count($timestamps); $i++) {
-
             $time = ($timestamps[$i] - $timestamps[$i - 1]);
+
             //Normalize
             $time = $time * 10;
             $time = round($time, 2);
-
             $timeDiffs[] = $time;
         }
 
         if (count($timeDiffs) > 5) {
-            $storedDiffs = $this->updateHistory($ip, $timeDiffs, 'TBR');
-            $this->updateVarianceHistory($ip, $timeDiffs, 'TBRVariance');
+            $this->updateVariance($ip, $timeDiffs, 'TBRVariance');
         }
     }
 
@@ -89,18 +104,16 @@ class PatternAnalysisListener implements ShouldQueue
         return $history[$ip];
     }
 
-    private function updateVarianceHistory(string $ip, array $data, string $varianceKey)
+    private function updateVariance(string $ip, array $data, string $varianceKey)
     {
         $variances = Cache::get($this->cacheKeys[$varianceKey], []);
-
 
         $variance = $this->calculateVariance($data);
         if ($variance == null) {
             return;
         }
 
-        $variances[$ip] = array_merge($variances[$ip] ?? [], [$variance]);
-        $variances[$ip] = array_slice($variances[$ip], -$this->historyLength);
+        $variances[$ip] = $variance;
 
         Cache::put($this->cacheKeys[$varianceKey], $variances);
 
@@ -120,35 +133,24 @@ class PatternAnalysisListener implements ShouldQueue
         Log::channel($this->logChannel)->info('---- ANALYSIS START ----');
 
         $RC = Cache::get($this->cacheKeys['RC'], []);
-        $TBR = Cache::get($this->cacheKeys['TBR'], []);
-        $RCVariance = Cache::get($this->cacheKeys['RCVariance'], []);
         $TBRVariance = Cache::get($this->cacheKeys['TBRVariance'], []);
 
-        foreach (array_keys($RCVariance) as $ip) {
-            $RCVoV = isset($RCVariance[$ip]) ? $this->calculateVariance($RCVariance[$ip]) : null;
-            $TBRVoV = isset($TBRVariance[$ip]) ? $this->calculateVariance($TBRVariance[$ip]) : null;
-
+        foreach (array_keys($TBRVariance) as $ip) {
             Log::channel($this->logChannel)->info("RC for $ip: " . json_encode($RC[$ip] ?? "No Data"));
-            Log::channel($this->logChannel)->info("TBR for $ip: " . json_encode($TBR[$ip] ?? "No Data"));
-
-            Log::channel($this->logChannel)->info("RC_V for $ip: " . json_encode($RCVariance[$ip]));
             Log::channel($this->logChannel)->info("TBR_V for $ip: " . json_encode($TBRVariance[$ip]));
 
-            Log::channel($this->logChannel)->info("RCVoV for $ip: " . ($RCVoV ?? "No Data yet"));
-            Log::channel($this->logChannel)->info("TBRVoV for $ip: " . ($TBRVoV ?? "No Data yet"));
-            Log::channel($this->logChannel)->info('---- NEXT IP ----');
 
-
-            if (($RCVoV !== null && $RCVoV <= $this->thresholds['RCVoV']) ||
-                ($TBRVoV !== null && $TBRVoV <= $this->thresholds['TBRVoV'])) {
-                $this->punish($ip);
-            }
+//            if (($RCVoV !== null && $RCVoV <= $this->thresholds['RCVoV']) ||
+//                ($TBRVoV !== null && $TBRVoV <= $this->thresholds['TBRVoV'])) {
+//                $this->punish($ip);
+//            }
         }
         Log::channel($this->logChannel)->info('---- ANALYSIS END ----');
     }
 
     private function punish(string $ip)
     {
+        Siop::dispatchSecurityEvent('Request spike', [], 'behaviour');
         Log::channel($this->logChannel)->info("PUNISH: $ip");
 //        Siop::blockIP($ip);
     }

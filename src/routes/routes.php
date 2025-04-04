@@ -17,18 +17,22 @@ Route::get('/dashboard/data', [DashboardController::class, 'showDashboardData'])
 
 
 //Settings
+Route::get('/settings', [SettingsController::class, 'index'])->name('siop-settings.index');
 
-//Route::get('/settings', [SettingsController::class, 'index'])->name('siop-settings.index');
-Route::get('/settings/patterns', [SettingsController::class, 'patterns'])->name('siop.patterns.index');
-Route::post('/patterns', [SettingsController::class, 'patternsStore'])->name('siop.patterns.store');
-Route::delete('/patterns/{id}', [SettingsController::class, 'patternsDestroy'])->name('siop.patterns.destroy');
+
 
 //Events
-Route::get('/events', [EventController::class, 'list'])->name('siop-events.list');
-Route::get('/event/{event}', [EventController::class, 'show'])->name('siop-events.show');
-Route::delete('/event/{event}', [EventController::class, 'destroy'])->name('siop-events.destroy');
-Route::post('/event/{event}/block-ip', [EventController::class, 'blockIp'])->name('siop-events.block-ip');
-Route::post('/event/{event}/whitelist-ip', [EventController::class, 'whitelistIp'])->name('siop-events.whitelist-ip');
+Route::group([
+    'prefix' => 'events'
+], function () {
+    Route::get('/', [EventController::class, 'list'])->name('siop-events.list');
+    Route::get('/{event}', [EventController::class, 'show'])->name('siop-events.show');
+    Route::delete('/{event}', [EventController::class, 'destroy'])->name('siop-events.destroy');
+    Route::post('/{event}/block-ip', [EventController::class, 'blockIp'])->name('siop-events.block-ip');
+    Route::post('/{event}/whitelist-ip', [EventController::class, 'whitelistIp'])->name('siop-events.whitelist-ip');
+
+});
+
 
 
 

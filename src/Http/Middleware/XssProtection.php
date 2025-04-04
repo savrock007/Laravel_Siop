@@ -13,14 +13,12 @@ class XssProtection extends TransformsRequest
 
     protected array $excludedKeys = ['cookie'];
     private $mode;
-    private $report;
+
     private $malicious = [];
 
-    public function handle($request, Closure $next, $mode = 'clean', $report = true)
+    public function handle($request, Closure $next, $mode = 'clean')
     {
         $this->mode = $mode;
-        $this->report = $report;
-
 
         $this->clean($request);
 
@@ -28,11 +26,9 @@ class XssProtection extends TransformsRequest
             return $next($request);
         }
 
+        $additional_meta = ['malicious_input' => $this->malicious];
+        Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
 
-        if ($this->report) {
-            $additional_meta = ['malicious_input' => $this->malicious];
-                Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
-        }
 
         if ($this->mode === 'block') {
             Siop::blockIP($request->ip());

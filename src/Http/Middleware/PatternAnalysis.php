@@ -19,7 +19,7 @@ class PatternAnalysis
         $ip = $request->ip();
 
         //START DEBUG ONLY
-        $ip = $request->header('X-Forwarded-For');
+        $ip = $request->header('X-Forwarded-For') ?? $request->ip();
         if (Ip::where('ip_hash', hash('sha256', $ip))->exists()) {
             return response('Unauthorized', 403);
         }
@@ -59,12 +59,12 @@ class PatternAnalysis
     private function storeRequestHistory(string $ip, string $route): void
     {
         $cacheKey = "security:patterns:all_requests";
-        $entry = json_encode([
+        $entry = [
             'ip' => $ip,
             'user' => \Auth::user()?->id,
             'route' => $route,
             'timestamp' => microtime(true),
-        ]) ?? [];
+        ] ?? [];
 
 
         $history = Cache::get($cacheKey, []);

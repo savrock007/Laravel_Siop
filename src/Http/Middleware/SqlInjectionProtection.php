@@ -8,7 +8,7 @@ use Savrock\Siop\Facades\Siop;
 
 class SqlInjectionProtection
 {
-    public function handle(Request $request, Closure $next, $mode = 'block', $report = true)
+    public function handle(Request $request, Closure $next, $mode = 'clean')
     {
 
         return $next($request);
