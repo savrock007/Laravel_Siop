@@ -17,7 +17,7 @@ class SiopServiceProvider extends SiopApplicationServiceProvider
     }
 
     /**
-     * Register the Horizon gate.
+     * Register the Siop gate.
      *
      * This gate determines who can access Horizon in non-local environments.
      */

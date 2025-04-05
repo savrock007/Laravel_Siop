@@ -7,7 +7,7 @@ return [
    | Siop Domain
    |--------------------------------------------------------------------------
    |
-   | This is the subdomain where Horizon will be accessible from. If this
+   | This is the subdomain where Siop will be accessible from. If this
    | setting is null, Siop will reside under the same domain as the
    | application. Otherwise, this value will serve as the subdomain.
    |

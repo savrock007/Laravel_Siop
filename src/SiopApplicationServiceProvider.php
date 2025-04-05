@@ -18,7 +18,7 @@ class SiopApplicationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure the Horizon authorization services.
+     * Configure the Siop authorization services.
      *
      * @return void
      */
@@ -32,9 +32,9 @@ class SiopApplicationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the Horizon gate.
+     * Register the Siop gate.
      *
-     * This gate determines who can access Horizon in non-local environments.
+     * This gate determines who can access Siop in non-local environments.
      *
      * @return void
      */
