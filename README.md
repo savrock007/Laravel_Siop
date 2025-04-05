@@ -17,7 +17,7 @@ This package provides a security dashboard for monitoring and managing web appli
 ### 1. Install the Package
 
 Add repository to your composer.json file
-```
+```json
 "repositories": [
         {
             "type": "vcs",
@@ -26,7 +26,7 @@ Add repository to your composer.json file
     ],
 ```
 Require package
-```
+```json
  "require": {
         "savrock007/laravel_siop": "dev-main"
 }
@@ -35,6 +35,12 @@ Require package
 ### 2. Publish Configuration Files
 ```bash
 php artisan vendor:publish --provider="Savrock\Siop\SiopServiceProvider"
+```
+Register Provider in ```config/app.php```
+```php
+'providers' => ServiceProvider::defaultProviders()->merge([
+        App\Providers\SiopServiceProvider::class
+    ])->toArray(),
 ```
 
 ### 3. Run migration
