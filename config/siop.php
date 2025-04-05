@@ -110,5 +110,6 @@ return [
     ],
 
 
-    'enable_pattern_analysis' => false,
+    'enable_pattern_analysis' => true,
+    'pattern_analysis_cooldown' => 0.5 //in minutes
 ];

@@ -77,7 +77,7 @@ class SiopServiceProvider extends ServiceProvider
 
     protected function registerResources()
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'siop');
     }
 

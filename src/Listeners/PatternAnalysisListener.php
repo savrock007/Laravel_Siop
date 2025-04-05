@@ -18,13 +18,13 @@ class PatternAnalysisListener implements ShouldQueue
 
     private $cacheKeys = [
         'requests' => "security:patterns:all_requests",
-        'RC' => "security:stats:rc",
+        'RPM' => "security:stats:rpm",
         'TBRVariance' => "security:stats:tbr_variance",
     ];
 
     private $thresholds = [
-        'RCVoV' => 0.1,
-        'TBRVoV' => 100,
+        'RPM_V' => 0.1,
+        'TBR_V' => 100,
     ];
 
     private array $history;
@@ -57,23 +57,22 @@ class PatternAnalysisListener implements ShouldQueue
 
     private function trackRequestCount(string $ip, array $ip_requests)
     {
-        $currentRC = count($ip_requests);
-        $rcHistory = $this->updateHistory($ip, $currentRC, 'RC');
+        $currentRPM = count($ip_requests) / config('siop.pattern_analysis_cooldown'); //Requests per minute
+        $rpmHistory = $this->updateHistory($ip, $currentRPM, 'RPM');
 
-        if (count($rcHistory) >= 5) { // Ensure enough history for comparison
-            $this->detectRequestSpike($ip, $rcHistory, $currentRC);
+        if (count($rpmHistory) >= 5) { // Ensure enough history for comparison
+            $this->detectRequestSpike($ip, $rpmHistory, $currentRPM);
         }
     }
 
-    private function detectRequestSpike(string $ip, array $rcHistory, int $currentRC)
+    private function detectRequestSpike(string $ip, array $rpmHistory, int $currentRPM)
     {
-        $historicalAvg = array_sum($rcHistory) / count($rcHistory);
-        $thresholdMultiplier = 2.; // Adjust sensitivity
+        $historicalAvg = array_sum($rpmHistory) / count($rpmHistory);
+        $thresholdMultiplier = 2; // Adjust sensitivity
         $spikeThreshold = $historicalAvg * $thresholdMultiplier;
 
-        if ($currentRC > $spikeThreshold) {
-            Log::channel($this->logChannel)->warning("🚨 SPIKE DETECTED for $ip: $currentRC requests (Avg: $historicalAvg)");
-            $this->punish($ip);
+        if ($currentRPM > $spikeThreshold) {
+            $this->punish($ip, "RPM spike", ['avg_rpm' => round($historicalAvg, 2), 'detected_rpm' => $currentRPM]);
         }
     }
 
@@ -109,7 +108,7 @@ class PatternAnalysisListener implements ShouldQueue
         $variances = Cache::get($this->cacheKeys[$varianceKey], []);
 
         $variance = $this->calculateVariance($data);
-        if ($variance == null) {
+        if ($variance === null) {
             return;
         }
 
@@ -132,15 +131,23 @@ class PatternAnalysisListener implements ShouldQueue
     {
         Log::channel($this->logChannel)->info('---- ANALYSIS START ----');
 
-        $RC = Cache::get($this->cacheKeys['RC'], []);
+        $RPM = Cache::get($this->cacheKeys['RPM'], []);
         $TBRVariance = Cache::get($this->cacheKeys['TBRVariance'], []);
 
-        foreach (array_keys($TBRVariance) as $ip) {
-            Log::channel($this->logChannel)->info("RC for $ip: " . json_encode($RC[$ip] ?? "No Data"));
+        foreach (array_keys($RPM) as $ip) {
+            $TBR_V_ip = $TBRVariance[$ip] ?? null;
+            $RPM_ip = $RPM[$ip] ?? null;
+
+            if ($TBR_V_ip !== null && $TBR_V_ip < $this->thresholds['TBR_V']) {
+                $this->punish($ip, 'Small time variance between requests', ['time_between_requests_variance' => $TBR_V_ip]);
+            }
+
+
+            Log::channel($this->logChannel)->info("RPM for $ip: " . json_encode($RPM[$ip] ?? "No Data"));
             Log::channel($this->logChannel)->info("TBR_V for $ip: " . json_encode($TBRVariance[$ip]));
 
 
-//            if (($RCVoV !== null && $RCVoV <= $this->thresholds['RCVoV']) ||
+//            if (($RPMVoV !== null && $RPMVoV <= $this->thresholds['RPMVoV']) ||
 //                ($TBRVoV !== null && $TBRVoV <= $this->thresholds['TBRVoV'])) {
 //                $this->punish($ip);
 //            }
@@ -148,10 +155,24 @@ class PatternAnalysisListener implements ShouldQueue
         Log::channel($this->logChannel)->info('---- ANALYSIS END ----');
     }
 
-    private function punish(string $ip)
+    private function punish(string $ip, string $reason, array $meta = [])
     {
-        Siop::dispatchSecurityEvent('Request spike', [], 'behaviour');
+        $meta['IP'] = $ip;
+        Siop::dispatchSecurityEvent($reason, $meta, 'behaviour');
         Log::channel($this->logChannel)->info("PUNISH: $ip");
-//        Siop::blockIP($ip);
+
+
+        $this->flush($ip);
+    }
+
+    private function flush(string $ip)
+    {
+        foreach ($this->cacheKeys as $key) {
+            $data = Cache::get($key, []);
+            if (isset($data[$ip])) {
+                unset($data[$ip]);
+                Cache::put($key, $data);
+            }
+        }
     }
 }

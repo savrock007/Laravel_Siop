@@ -12,13 +12,12 @@ class XssProtection extends TransformsRequest
 {
 
     protected array $excludedKeys = ['cookie'];
-    private $mode;
 
-    private $malicious = [];
+    private array $malicious = [];
+
 
     public function handle($request, Closure $next, $mode = 'clean')
     {
-        $this->mode = $mode;
 
         $this->clean($request);
 
@@ -26,14 +25,14 @@ class XssProtection extends TransformsRequest
             return $next($request);
         }
 
-        $additional_meta = ['malicious_input' => $this->malicious];
-        Siop::dispatchSecurityEvent('XSS detected', $additional_meta, 'xss', config('siop.xss_severity'));
+        Siop::dispatchSecurityEvent('XSS detected', ['malicious_input' => $this->malicious], 'xss', config('siop.xss_severity'));
 
 
-        if ($this->mode === 'block') {
+        if ($mode === 'block') {
             Siop::blockIP($request->ip());
             abort(403, 'XSS detected and blocked.');
         }
+//        abort(400, 'XSS detected and blocked.');
 
 
         return $next($request);
@@ -47,19 +46,45 @@ class XssProtection extends TransformsRequest
             return $value;
         }
 
-        $htmlPurifier = new \HTMLPurifier();
-        $clean = $htmlPurifier->purify($value);
+        $patterns = [
+            '/\bon\w+\b(?=\s*=)/i',
+            '/<\s*script\b[^>]*>.*?<\s*\/script\s*>/is',
+        ];
 
-        if ($clean === $value) {
-            return $clean;
+        foreach ($patterns as $pattern) {
+            $value = $this->processPattern($key, $value, $pattern);
         }
-
-        $this->malicious[] = [$key => $value];
-
-        return $clean;
-
+        return $value;
 
     }
+
+
+    private function processPattern(string $key, string $value, $pattern): string
+    {
+        preg_match_all($pattern, $value, $matches);
+
+        if (empty($matches[0])) {
+            return $value;
+        } else {
+            $this->malicious[] = [$key, $value];//record in malicious array if matches found
+        }
+
+        //clean value by inserting random space in event handler
+        $modified = $value;
+        foreach ($matches[0] as $handler) {
+            $modified = str_replace($handler, $this->insertSpace($handler), $modified);
+        }
+
+
+        return $modified;
+    }
+
+
+    private function insertSpace(string $str): string
+    {
+        return strlen($str) > 3 ? substr_replace($str, ' ', 3, 0) : $str;
+    }
+
 
 
 }

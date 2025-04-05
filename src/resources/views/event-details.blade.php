@@ -4,7 +4,8 @@
     <div class="container mx-auto p-6">
         <h2 class="text-3xl font-semibold text-gray-800 dark:text-gray-200">Security Event Details</h2>
         @if (session('success'))
-            <div class="mb-4 mt-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded-lg dark:bg-green-900 dark:border-green-600 dark:text-green-300">
+            <div
+                class="mb-4 mt-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded-lg dark:bg-green-900 dark:border-green-600 dark:text-green-300">
                 <strong>Success:</strong> {!! session('success') !!}
             </div>
         @endif
@@ -17,8 +18,13 @@
                 </p>
                 <p><strong class="text-gray-700 dark:text-gray-300">Timestamp:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $event->created_at }}</span></p>
-                <p><strong class="text-gray-700 dark:text-gray-300">IP Address:</strong> <span
-                        class="text-gray-900 dark:text-gray-100">{{ $meta['IP'] ?? 'N/A' }} {{$ip_blocked ? "(blocked)" : ""}}</span>
+                <p><strong class="text-gray-700 dark:text-gray-300">IP Address:</strong>
+                    <a
+                        class="text-gray-900 dark:text-gray-100"
+                        style="text-decoration: underline"
+                        href="{{route('siop-events.list',['ip'=>$meta['IP']])}}">
+                        {{ $meta['IP'] ?? 'N/A' }} {{$ip_blocked ? "(blocked)" : ""}}
+                    </a>
                 </p>
                 <p><strong class="text-gray-700 dark:text-gray-300">Message:</strong> <span
                         class="text-gray-900 dark:text-gray-100">{{ $event->message }}</span></p>
@@ -54,7 +60,8 @@
                       onsubmit="return confirm('Whitelist this IP?');">
                     @csrf
                     <button
-                        class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700" {{!$ip_blocked ? 'hidden' : ''}}>Whitelist
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700" {{!$ip_blocked ? 'hidden' : ''}}>
+                        Whitelist
                         IP
                     </button>
                 </form>
