@@ -19,14 +19,12 @@ class SiopServiceProvider extends SiopApplicationServiceProvider
     /**
      * Register the Siop gate.
      *
-     * This gate determines who can access Horizon in non-local environments.
+     * This gate determines who can access Siop in non-local environments.
      */
     protected function gate(): void
     {
         Gate::define('viewSiop', function ($user) {
-            return in_array($user->email, [
-                //
-            ]);
+            return $user->id == 1;
         });
     }
 }

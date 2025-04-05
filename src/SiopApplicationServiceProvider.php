@@ -4,6 +4,7 @@ namespace Savrock\Siop;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Horizon\Horizon;
 
 class SiopApplicationServiceProvider extends ServiceProvider
 {
@@ -25,27 +26,16 @@ class SiopApplicationServiceProvider extends ServiceProvider
     protected function authorization()
     {
         $this->gate();
-
-        Siop::auth(function ($request) {
-            return Gate::check('viewSiop', [$request->user()]) || app()->environment('local');
-        });
     }
 
-    /**
-     * Register the Siop gate.
-     *
-     * This gate determines who can access Siop in non-local environments.
-     *
-     * @return void
-     */
     protected function gate()
     {
         Gate::define('viewSiop', function ($user) {
-            return in_array($user->email, [
-                //
-            ]);
+            return $user->id == 1;
         });
     }
+
+
 
     /**
      * Register any application services.

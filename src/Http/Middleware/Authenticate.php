@@ -2,6 +2,7 @@
 
 namespace Savrock\Siop\Http\Middleware;
 
+use Illuminate\Support\Facades\Gate;
 use Savrock\Siop\Siop;
 
 class Authenticate
@@ -15,10 +16,12 @@ class Authenticate
      */
     public function handle($request, $next)
     {
-        if (! Siop::check($request)) {
+//        dd($request->user());
+        if (!Gate::check('viewSiop', [$request->user()])) {
             Siop::dispatchSecurityEvent('Attempt to access Siop panel',[],'Access Control');
             abort(403,'Unauthorized');
         }
+
 
         return $next($request);
     }
