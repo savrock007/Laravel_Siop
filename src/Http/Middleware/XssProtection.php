@@ -10,9 +10,12 @@ use Savrock\Siop\Siop;
 
 class XssProtection extends TransformsRequest
 {
+    protected array $patterns = [
+        '/\bon\w+\b(?=\s*=)/i',
+        '/<\s*script\b[^>]*>.*?<\s*\/script\s*>/is',
+    ];
 
     protected array $excludedKeys = ['cookie'];
-
     private array $malicious = [];
 
 
@@ -32,8 +35,6 @@ class XssProtection extends TransformsRequest
             Siop::blockIP($request->ip());
             abort(403, 'XSS detected and blocked.');
         }
-//        abort(400, 'XSS detected and blocked.');
-
 
         return $next($request);
 
@@ -46,12 +47,8 @@ class XssProtection extends TransformsRequest
             return $value;
         }
 
-        $patterns = [
-            '/\bon\w+\b(?=\s*=)/i',
-            '/<\s*script\b[^>]*>.*?<\s*\/script\s*>/is',
-        ];
 
-        foreach ($patterns as $pattern) {
+        foreach ($this->patterns as $pattern) {
             $value = $this->processPattern($key, $value, $pattern);
         }
         return $value;
@@ -66,7 +63,7 @@ class XssProtection extends TransformsRequest
         if (empty($matches[0])) {
             return $value;
         } else {
-            $this->malicious[] = [$key, $value];//record in malicious array if matches found
+            $this->malicious[$key] = $value;//record in malicious array if matches found
         }
 
         //clean value by inserting random space in event handler
@@ -84,7 +81,6 @@ class XssProtection extends TransformsRequest
     {
         return strlen($str) > 3 ? substr_replace($str, ' ', 3, 0) : $str;
     }
-
 
 
 }

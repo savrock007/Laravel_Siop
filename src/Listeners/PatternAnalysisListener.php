@@ -68,10 +68,10 @@ class PatternAnalysisListener implements ShouldQueue
     private function detectRequestSpike(string $ip, array $rpmHistory, int $currentRPM)
     {
         $historicalAvg = array_sum($rpmHistory) / count($rpmHistory);
-        $thresholdMultiplier = 2; // Adjust sensitivity
+        $thresholdMultiplier = 3; // Adjust sensitivity
         $spikeThreshold = $historicalAvg * $thresholdMultiplier;
 
-        if ($currentRPM > $spikeThreshold) {
+        if ($currentRPM > $spikeThreshold || $currentRPM >= 100) {
             $this->punish($ip, "RPM spike", ['avg_rpm' => round($historicalAvg, 2), 'detected_rpm' => $currentRPM]);
         }
     }
