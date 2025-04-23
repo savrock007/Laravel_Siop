@@ -30,7 +30,7 @@ class PatternAnalysis
         $this->storeRequestHistory($ip, $route);
 
         if ($this->shouldTriggerEvent()) {
-//            dd('trigger');
+//            dd(1);
             event(new PatternAnalysisEvent());
         }
 

@@ -60,7 +60,7 @@ class PatternAnalysisListener implements ShouldQueue
         $currentRPM = count($ip_requests) / config('siop.pattern_analysis_cooldown'); //Requests per minute
         $rpmHistory = $this->updateHistory($ip, $currentRPM, 'RPM');
 
-        if (count($rpmHistory) >= 5) { // Ensure enough history for comparison
+        if (count($rpmHistory) >= 5) {
             $this->detectRequestSpike($ip, $rpmHistory, $currentRPM);
         }
     }
@@ -68,7 +68,7 @@ class PatternAnalysisListener implements ShouldQueue
     private function detectRequestSpike(string $ip, array $rpmHistory, int $currentRPM)
     {
         $historicalAvg = array_sum($rpmHistory) / count($rpmHistory);
-        $thresholdMultiplier = 3; // Adjust sensitivity
+        $thresholdMultiplier = 3;
         $spikeThreshold = $historicalAvg * $thresholdMultiplier;
 
         if ($currentRPM > $spikeThreshold || $currentRPM >= 100) {
@@ -129,7 +129,6 @@ class PatternAnalysisListener implements ShouldQueue
 
     private function analyze()
     {
-        Log::channel($this->logChannel)->info('---- ANALYSIS START ----');
 
         $RPM = Cache::get($this->cacheKeys['RPM'], []);
         $TBRVariance = Cache::get($this->cacheKeys['TBRVariance'], []);
@@ -141,27 +140,13 @@ class PatternAnalysisListener implements ShouldQueue
             if ($TBR_V_ip !== null && $TBR_V_ip < $this->thresholds['TBR_V']) {
                 $this->punish($ip, 'Small time variance between requests', ['time_between_requests_variance' => $TBR_V_ip]);
             }
-
-
-            Log::channel($this->logChannel)->info("RPM for $ip: " . json_encode($RPM[$ip] ?? "No Data"));
-            Log::channel($this->logChannel)->info("TBR_V for $ip: " . json_encode($TBRVariance[$ip]));
-
-
-//            if (($RPMVoV !== null && $RPMVoV <= $this->thresholds['RPMVoV']) ||
-//                ($TBRVoV !== null && $TBRVoV <= $this->thresholds['TBRVoV'])) {
-//                $this->punish($ip);
-//            }
         }
-        Log::channel($this->logChannel)->info('---- ANALYSIS END ----');
     }
 
     private function punish(string $ip, string $reason, array $meta = [])
     {
         $meta['IP'] = $ip;
         Siop::dispatchSecurityEvent($reason, $meta, 'behaviour');
-        Log::channel($this->logChannel)->info("PUNISH: $ip");
-
-
         $this->flush($ip);
     }
 
