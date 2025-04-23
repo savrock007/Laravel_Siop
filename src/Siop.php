@@ -3,10 +3,9 @@
 namespace Savrock\Siop;
 
 use Carbon\Carbon;
-use Closure;
 use Exception;
-use Savrock\Siop\Events\NewSecurityEvent;
 use Savrock\Siop\Models\Ip;
+use Savrock\Siop\Models\SecurityEvent;
 
 class Siop
 {
@@ -22,10 +21,16 @@ class Siop
     {
         /** @var MetaGenerator $metaGenerator */
         $metaGenerator = new (config("siop.meta_generator", MetaGenerator::class));
-        $meta = array_replace_recursive($metaGenerator->generateMetadata(),$meta);
+        $meta = array_replace_recursive($metaGenerator->generateMetadata(), $meta);
 
 
-        event(new NewSecurityEvent($message, $meta, $category, $severity));
+        SecurityEvent::create([
+            'message' => $message,
+            'category' => $category,
+            'meta' => $meta,
+            'severity' => $severity
+        ]);
+
     }
 
 

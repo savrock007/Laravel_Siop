@@ -13,6 +13,7 @@ class XssProtection extends TransformsRequest
     protected array $patterns = [
         '/\bon\w+\b(?=\s*=)/i',
         '/<\s*script\b[^>]*>.*?<\s*\/script\s*>/is',
+        '/\bjavascript:\S+/i'
     ];
 
     protected array $excludedKeys = ['cookie'];
@@ -21,6 +22,7 @@ class XssProtection extends TransformsRequest
 
     public function handle($request, Closure $next, $mode = 'clean')
     {
+        $start = microtime(true);
 
         $this->clean($request);
 
@@ -36,17 +38,19 @@ class XssProtection extends TransformsRequest
             abort(403, 'XSS detected and blocked.');
         }
 
-        return $next($request);
+        $end = microtime(true);
+        $response = $next($request);
+        $response->headers->set('X-Xss-Middleware-Time', ($end-$start)* 1000);
+        return $response;
 
     }
 
 
     public function transform($key, $value)
     {
-        if ($value == null || $value == '') {
+        if (!is_string($value) || $value === '') {
             return $value;
         }
-
 
         foreach ($this->patterns as $pattern) {
             $value = $this->processPattern($key, $value, $pattern);
@@ -58,29 +62,24 @@ class XssProtection extends TransformsRequest
 
     private function processPattern(string $key, string $value, $pattern): string
     {
-        preg_match_all($pattern, $value, $matches);
-
-        if (empty($matches[0])) {
+        if (!preg_match($pattern, $value)) {
             return $value;
-        } else {
-            $this->malicious[$key] = $value;//record in malicious array if matches found
         }
 
-        //clean value by inserting random space in event handler
-        $modified = $value;
-        foreach ($matches[0] as $handler) {
-            $modified = str_replace($handler, $this->insertSpace($handler), $modified);
-        }
+        $this->malicious[$key] = $value;
 
-
-        return $modified;
+        return preg_replace_callback($pattern, function ($matches) {
+            return $this->insertSpace($matches[0]);
+        }, $value);
     }
+
 
 
     private function insertSpace(string $str): string
     {
-        return strlen($str) > 3 ? substr_replace($str, ' ', 3, 0) : $str;
+        return substr($str, 0, 3) . ' ' . substr($str, 3);
     }
+
 
 
 }

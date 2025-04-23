@@ -39,7 +39,12 @@ class EventController extends Controller
             $query->where('severity', $request->severity);
         }
 
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+        $query->orderBy($sortColumn, $sortOrder);
+
         $events = $query->orderBy('created_at','desc')->get();
+
 
         $events = $events->filter(function ($event) use ($request) {
             if ($request->input('ip') != null && ($event->meta['IP'] ?? null) !== $request->input('ip')) {
@@ -51,10 +56,6 @@ class EventController extends Controller
             }
             return true;
         });
-
-//        $sortColumn = $request->get('sort', 'created_at');
-//        $sortOrder = $request->get('order', 'desc');
-//        $events->sortBy($sortColumn, $sortOrder);
 
 
         $events = self::paginateCollection($events, 15);

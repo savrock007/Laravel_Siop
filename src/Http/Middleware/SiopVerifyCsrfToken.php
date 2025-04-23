@@ -7,7 +7,7 @@ use Illuminate\Session\TokenMismatchException;
 use Closure;
 use Savrock\Siop\Siop;
 
-class VerifyCsrfToken extends Middleware
+class SiopVerifyCsrfToken extends Middleware
 {
     public function handle($request, Closure $next)
     {
