@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Savrock\Siop\Events\PatternAnalysisEvent;
-use Savrock\Siop\Models\Ip;
 
 class PatternAnalysis
 {
@@ -18,19 +17,12 @@ class PatternAnalysis
 
         $ip = $request->ip();
 
-        //START DEBUG ONLY
-        $ip = $request->header('X-Forwarded-For') ?? $request->ip();
-        if (Ip::where('ip_hash', hash('sha256', $ip))->exists()) {
-            return response('Unauthorized', 403);
-        }
-        // END DEBUG ONLY
 
         $route = $request->path();
 
         $this->storeRequestHistory($ip, $route);
 
         if ($this->shouldTriggerEvent()) {
-//            dd(1);
             event(new PatternAnalysisEvent());
         }
 

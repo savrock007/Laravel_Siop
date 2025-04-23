@@ -54,8 +54,6 @@ class SiopServiceProvider extends ServiceProvider
     public function registerEvents()
     {
         Event::listen(PatternAnalysisEvent::class, PatternAnalysisListener::class);
-        Event::listen(NewSecurityEvent::class, SecurityEventListener::class);
-
     }
 
     public function registerRoutes()
