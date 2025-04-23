@@ -20,7 +20,7 @@ class BlockIps
         $request_ip_hash = hash('sha256', $request->ip());
 
         $cacheKey = "blocked_ip:{$request_ip_hash}";
-        $isBlocked = Cache::remember($cacheKey, now()->addMinutes(3), function () use ($request_ip_hash) {
+        $isBlocked = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($request_ip_hash) {
             return Ip::where('ip_hash', $request_ip_hash)
                 ->where('expires_at', '>', Carbon::now())
                 ->exists();

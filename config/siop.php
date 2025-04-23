@@ -89,7 +89,7 @@ return [
     | These parameters determine default time for IP blocking when middleware block method is chosen
     |
     */
-    'block_time' => '100y',
+    'block_time' => '1m',
 
     //Specify generator class for metadata
     'meta_generator' => \Savrock\Siop\MetaGenerator::class,
