@@ -82,7 +82,6 @@
         // Initialize charts with default data
         fetchChartData(startDateDefault, endDateDefault);
 
-        // Event listener for Apply button
         document.getElementById('apply-date-range').addEventListener('click', function () {
             var startDate = document.getElementById('start-date').value;
             var endDate = document.getElementById('end-date').value;
@@ -126,6 +125,7 @@
                 data: {
                     labels: ['Low', 'Medium', 'High'],
                     datasets: [{
+                        label: 'Events Detected',
                         data: data.severities,
                         backgroundColor: ['#32cd32', '#ff8c00', '#ff0000'],
                         borderColor: ['#32cd32', '#ff8c00', '#ff0000'],

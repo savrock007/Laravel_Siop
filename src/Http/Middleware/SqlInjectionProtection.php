@@ -37,7 +37,7 @@ class SqlInjectionProtection extends TransformsRequest
             return $next($request);
         }
 
-        Siop::dispatchSecurityEvent('SQL injection detected', ['malicious_input' => $this->malicious], 'xss', config('siop.xss_severity'));
+        Siop::dispatchSecurityEvent('SQL injection detected', ['malicious_input' => $this->malicious], 'SQLI', config('siop.xss_severity'));
 
         if ($mode === 'block') {
             Siop::blockIP($request->ip());
